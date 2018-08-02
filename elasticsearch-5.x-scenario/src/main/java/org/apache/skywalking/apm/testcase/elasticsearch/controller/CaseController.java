@@ -1,7 +1,5 @@
 package org.apache.skywalking.apm.testcase.elasticsearch.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -21,7 +19,6 @@ import java.util.UUID;
 /**
  * @author oatiz.
  */
-@Slf4j
 @RestController
 @RequestMapping("/case")
 public class CaseController {
@@ -33,10 +30,9 @@ public class CaseController {
     @GetMapping("/elasticsearch")
     public String elasticsearchCase() {
         Client client = initTransportClient();
-        String indexName = System.currentTimeMillis() + "_" + UUID.randomUUID();
+        String indexName = UUID.randomUUID().toString();
         try {
             // create
-            log.debug("do index request");
             index(client, indexName);
             // get
             get(client, indexName);
@@ -45,17 +41,18 @@ public class CaseController {
             // update
             update(client, indexName);
             // delete
-            log.debug("do delete request");
             delete(client, indexName);
-        } finally {
+            // remove index
             client.admin().indices().prepareDelete(indexName).execute();
+        } finally {
+            client.close();
         }
         return "ok";
     }
 
     private void index(Client client, String indexName) {
         try {
-            IndexResponse response = client.prepareIndex(indexName, "test")
+            client.prepareIndex(indexName, "test", "1")
                 .setSource(XContentFactory.jsonBuilder()
                     .startObject()
                     .field("name", "mysql innodb")
@@ -63,7 +60,6 @@ public class CaseController {
                     .field("language", "chinese")
                     .endObject())
                 .get();
-            log.debug("index response:[{}]", response.toString());
         } catch (IOException e) {
             // nothing to do
         }
@@ -89,7 +85,7 @@ public class CaseController {
 
 
     private void search(Client client, String indexName) {
-        client.prepareSearch(indexName).setTypes("test").setSize(10 * 1000).execute();
+        client.prepareSearch(indexName).setTypes("test").setSize(10).execute();
     }
 
     @SuppressWarnings("squid:S2095")
