@@ -45,7 +45,9 @@ public class CaseController {
             // remove index
             client.admin().indices().prepareDelete(indexName).execute();
         } finally {
-            client.close();
+            if (null != client) {
+                client.close();
+            }
         }
         return "ok";
     }
