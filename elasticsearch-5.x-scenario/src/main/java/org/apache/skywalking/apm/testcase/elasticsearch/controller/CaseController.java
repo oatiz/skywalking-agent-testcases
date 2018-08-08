@@ -1,5 +1,6 @@
 package org.apache.skywalking.apm.testcase.elasticsearch.controller;
 
+import org.apache.skywalking.apm.testcase.elasticsearch.exception.ClientInitializationException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -93,15 +94,18 @@ public class CaseController {
     @SuppressWarnings("squid:S2095")
     private Client initTransportClient() {
         TransportClient client = null;
+        Settings settings = Settings.builder()
+            .put("cluster.name", "docker-cluster")
+            .put("client.transport.sniff", false)
+            .build();
         try {
-            Settings settings = Settings.builder()
-                .put("cluster.name", "docker-cluster")
-                .put("client.transport.sniff", false)
-                .build();
             client = new PreBuiltTransportClient(settings)
                 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), 9300));
         } catch (UnknownHostException e) {
             // nothing to do
+        }
+        if (null == client) {
+            throw new ClientInitializationException("client initialization failed!");
         }
 
         return client;
