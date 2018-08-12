@@ -5,6 +5,7 @@ services:
     expose:
       - 9300
     environment:
+      - "cluster.name=docker-cluster-{COLLECTOR_OUTPUT_PORT}"
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms128m -Xmx128m"
       - discovery.type=single-node

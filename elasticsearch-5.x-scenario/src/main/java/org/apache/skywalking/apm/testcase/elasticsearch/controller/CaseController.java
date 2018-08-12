@@ -27,6 +27,9 @@ public class CaseController {
     @Value("${elasticsearch.host}")
     private String host;
 
+    @Value("${cluster.name}")
+    private String clusterName;
+
     @SuppressWarnings("squid:S2259")
     @GetMapping("/elasticsearch")
     public String elasticsearchCase() {
@@ -95,7 +98,7 @@ public class CaseController {
     private Client initTransportClient() {
         TransportClient client = null;
         Settings settings = Settings.builder()
-            .put("cluster.name", "docker-cluster")
+            .put("cluster.name", clusterName)
             .put("client.transport.sniff", false)
             .build();
         try {
